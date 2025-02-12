@@ -5,8 +5,8 @@ import os
 
 # Initialize Flask with correct template and static folders
 app = Flask(__name__, 
-           template_folder='../templates',
-           static_folder='../static')
+           template_folder='/workspaces/codespaces-blank/templates',
+           static_folder='/workspaces/codespaces-blank/static')
 
 # Get API keys from environment variables
 BASE_API_KEY = os.environ.get('BASE_API_KEY', 'ZIFYVT836FXTEGSRYMDZDAI6KM7BQUQE64')
