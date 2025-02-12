@@ -1,12 +1,16 @@
 from flask import Flask, render_template, request
 import requests
 from datetime import datetime, timezone
+import os
 
-app = Flask(__name__)
+# Initialize Flask with correct template and static folders
+app = Flask(__name__, 
+           template_folder='../templates',
+           static_folder='../static')
 
-# API Keys and Tokens Configuration
-BASE_API_KEY = 'ZIFYVT836FXTEGSRYMDZDAI6KM7BQUQE64'
-ETHERSCAN_API_KEY = 'GHA86RPT9HPEQZQEUD3QPFC827796KCJ4V'
+# Get API keys from environment variables
+BASE_API_KEY = os.environ.get('BASE_API_KEY', 'ZIFYVT836FXTEGSRYMDZDAI6KM7BQUQE64')
+ETHERSCAN_API_KEY = os.environ.get('ETHERSCAN_API_KEY', 'GHA86RPT9HPEQZQEUD3QPFC827796KCJ4V')
 
 TOKENS = [
     {   # Ethereum Pendle USR YT
@@ -184,6 +188,7 @@ def calculate_points(user_address):
 
         token_points = 0
         holding_days = 0.0
+        current_balance = 0.0
         
         for period in balance_history:
             # Calculate ACTUAL holding days based on real transactions
@@ -192,6 +197,7 @@ def calculate_points(user_address):
                 period_end = min(period['end'], current_timestamp)
                 period_days = (period_end - period_start) / SECONDS_PER_DAY
                 holding_days += max(period_days, 0)  # Prevent negative days
+                current_balance = period['balance']  # Update current balance
             
             # Points calculation remains the same
             for rate_block in rate_periods:
@@ -207,7 +213,9 @@ def calculate_points(user_address):
         results.append({
             'name': token['name'],
             'points': round(token_points, 2),
-            'days': round(holding_days, 2)
+            'days': round(holding_days, 2),
+            'balance': round(current_balance, 4),
+            'maturity_date': token['maturity_date']
         })
         total_points += token_points
 
@@ -222,5 +230,7 @@ def index():
         return render_template('index.html', results=results, total_points=total_points, address=user_address)
     return render_template('index.html')
 
+# Add these lines at the very end of the file
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Run the app in debug mode on port 5000
+    app.run(host='0.0.0.0', port=5000, debug=True)
