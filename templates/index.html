@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resolv YT Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Resolv YT Tracker</h1>
+            <p class="subtitle">Track your Yield Token holdings and points</p>
+        </header>
+
+        <form method="POST">
+            <input type="text" name="address" placeholder="Enter Ethereum address" required>
+            <button type="submit">Check Holdings</button>
+        </form>
+
+        {% if results %}
+        <div class="total-points">
+            Total Points: <span>{{ total_points }}</span>
+        </div>
+        
+        <div class="holdings-list">
+            {% for result in results %}
+            <div class="holding-card">
+                <div class="holding-header">
+                    <h3>{{ result.name }}</h3>
+                    <span class="points-badge">{{ result.points }} Points</span>
+                </div>
+                <div class="holding-details">
+                    <div class="detail">
+                        <span class="label">Days Held</span>
+                        <span class="value days-held">{{ result.days }}</span>
+                    </div>
+                    {% if result.maturity_date %}
+                    <div class="detail">
+                        <span class="label">Matures</span>
+                        <span class="value">{{ result.maturity_date }}</span>
+                    </div>
+                    {% endif %}
+                    {% if result.balance %}
+                    <div class="detail">
+                        <span class="label">Amount</span>
+                        <span class="value">{{ result.balance }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <footer>
+            <p>Created by <a href="https://twitter.com/magicianafk" target="_blank">@Mgicianafk</a></p>
+        </footer>
+    </div>
+</body>
+</html>
