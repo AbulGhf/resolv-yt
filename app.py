@@ -84,6 +84,18 @@ TOKENS = [
             {'rate': 45, 'end_date': '2025-04-30'}
         ],
         'maturity_date': '2025-04-30'
+    },
+    {   # Base USR LP (New Entry)
+        'name': 'Base USR LP',
+        'contracts': ['0xE15578523937ed7F08E8F7a1Fa8a021E07025a08'],
+        'api_key': BASE_API_KEY,
+        'base_url': 'https://api.basescan.org/api',
+        'points_schedule': [
+            {'rate': 60, 'end_date': '2025-02-23'},
+            {'rate': 45, 'end_date': '2025-04-24'}
+        ],
+        'maturity_date': '2025-04-24',
+        'price_api': 'https://api-v2.pendle.finance/core/v1/8453/assets/prices?addresses=0xE15578523937ed7F08E8F7a1Fa8a021E07025a08'
     }
 ]
 
@@ -155,6 +167,18 @@ def process_balance_history(transfers, user_address, final_end):
     
     return balance_history
 
+def get_token_price(price_api_url):
+    """Fetch token price from Pendle API"""
+    try:
+        response = requests.get(price_api_url, headers={'accept': 'application/json'})
+        if response.status_code == 200:
+            data = response.json()
+            return data['prices'].get(price_api_url.split('=')[-1].lower(), 1.0)
+        return 1.0  # Fallback price
+    except Exception as e:
+        print(f"Error fetching price: {e}")
+        return 1.0
+
 def calculate_points(user_address):
     """Calculate points and holding days for a given Ethereum address."""
     total_points = 0
@@ -188,40 +212,69 @@ def calculate_points(user_address):
         # Use current timestamp instead of maturity date for active positions
         final_end = min(rate_periods[-1]['end'], current_timestamp)
         balance_history = process_balance_history(transfers, user_address, final_end)
-
+        
         token_points = 0
         holding_days = 0.0
         current_balance = 0.0
+        usd_price = 1.0  # Default for non-LP tokens
+        
+        # Get USD price for LP tokens
+        if 'price_api' in token:
+            usd_price = get_token_price(token['price_api'])
         
         for period in balance_history:
-            # Calculate ACTUAL holding days based on real transactions
             if period['balance'] > 0:
                 period_start = max(period['start'], int(transfers[0]['timeStamp']))
                 period_end = min(period['end'], current_timestamp)
                 period_days = (period_end - period_start) / SECONDS_PER_DAY
                 holding_days += max(period_days, 0)  # Prevent negative days
-                current_balance = period['balance']  # Update current balance
-            
-            # Points calculation remains the same
-            for rate_block in rate_periods:
-                overlap_start = max(period['start'], rate_block['start'])
-                overlap_end = min(period['end'], rate_block['end'])
+                current_balance = period['balance']
                 
-                if overlap_start >= overlap_end:
-                    continue
+                # Calculate USD value for LP tokens
+                if 'price_api' in token:
+                    usd_value = period['balance'] * usd_price
+                else:
+                    usd_value = period['balance']
                 
-                rate_days = (overlap_end - overlap_start) / SECONDS_PER_DAY
-                token_points += period['balance'] * rate_days * rate_block['rate']
-
-        results.append({
-            'name': token['name'],
-            'points': round(token_points, 2),
-            'days': round(holding_days, 2),
-            'balance': round(current_balance, 4),
-            'maturity_date': token['maturity_date']
-        })
+                # Points calculation with USD value
+                for rate_block in rate_periods:
+                    overlap_start = max(period['start'], rate_block['start'])
+                    overlap_end = min(period['end'], rate_block['end'])
+                    
+                    if overlap_start >= overlap_end:
+                        continue
+                    
+                    rate_days = (overlap_end - overlap_start) / SECONDS_PER_DAY
+                    token_points += usd_value * rate_days * rate_block['rate']
+        
+        if 'price_api' in token:
+            if token['name'] == 'Base USR LP':
+                results.append({
+                    'name': token['name'],
+                    'points': round(token_points, 2),
+                    'days': round(holding_days, 2),
+                    'balance': round(current_balance, 4),
+                    'maturity_date': token['maturity_date'],
+                    'price': round(usd_price, 4)
+                })
+            else:
+                results.append({
+                    'name': token['name'],
+                    'points': round(token_points, 2),
+                    'days': round(holding_days, 2),
+                    'balance': round(current_balance, 4),
+                    'maturity_date': token['maturity_date']
+                })
+        else:
+            results.append({
+                'name': token['name'],
+                'points': round(token_points, 2),
+                'days': round(holding_days, 2),
+                'balance': round(current_balance, 4),
+                'maturity_date': token['maturity_date']
+            })
         total_points += token_points
-
+    
     return results, round(total_points, 2)
 
 @app.route('/', methods=['GET', 'POST'])
@@ -233,7 +286,5 @@ def index():
         return render_template('index.html', results=results, total_points=total_points, address=user_address)
     return render_template('index.html')
 
-# Add these lines at the very end of the file
 if __name__ == "__main__":
-    # Run the app in debug mode on port 5000
     app.run(host='0.0.0.0', port=5000, debug=True)
