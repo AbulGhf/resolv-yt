@@ -96,6 +96,18 @@ TOKENS = [
         ],
         'maturity_date': '2025-04-24',
         'price_api': 'https://api-v2.pendle.finance/core/v1/8453/assets/prices?addresses=0xE15578523937ed7F08E8F7a1Fa8a021E07025a08'
+    },
+    {   # Ethereum wstUSR LP (New Entry)
+        'name': 'Ethereum wstUSR LP',
+        'contracts': ['0x353d0B2EFB5B3a7987fB06D30Ad6160522d08426'],
+        'api_key': ETHERSCAN_API_KEY,
+        'base_url': 'https://api.etherscan.io/api',
+        'points_schedule': [
+            {'rate': 30, 'end_date': '2025-02-22'},
+            {'rate': 15, 'end_date': '2025-03-25'}
+        ],
+        'maturity_date': '2025-03-25',
+        'price_api': 'https://api-v2.pendle.finance/core/v1/1/assets/prices?addresses=0x353d0B2EFB5B3a7987fB06D30Ad6160522d08426'
     }
 ]
 
@@ -248,7 +260,7 @@ def calculate_points(user_address):
                     token_points += usd_value * rate_days * rate_block['rate']
         
         if 'price_api' in token:
-            if token['name'] == 'Base USR LP':
+            if token['name'] in ['Base USR LP', 'Ethereum wstUSR LP']:
                 results.append({
                     'name': token['name'],
                     'points': round(token_points, 2),

@@ -24,7 +24,7 @@
        
         <div class="holdings-list">
             {% for result in results %}
-            <div class="holding-card{% if 'Base USR LP' in result.name %} base-usr-lp{% endif %}">
+            <div class="holding-card{% if 'Base USR LP' in result.name %} base-usr-lp{% elif 'Ethereum wstUSR LP' in result.name %} ethereum-wst-usr-lp{% endif %}">
                 <div class="holding-header">
                     <h3>{{ result.name }}</h3>
                     <span class="points-badge">{{ result.points }} Points</span>
@@ -46,7 +46,7 @@
                         <span class="value">{{ result.balance }}</span>
                     </div>
                     {% endif %}
-                    {% if 'Base USR LP' in result.name and result.price %}
+                    {% if 'Base USR LP' in result.name or 'Ethereum wstUSR LP' in result.name %}
                     <div class="detail">
                         <span class="label">Price per Token</span>
                         <span class="value">{{ result.price }}</span>
