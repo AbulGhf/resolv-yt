@@ -2,6 +2,8 @@ from flask import Flask, render_template, request
 import requests
 from datetime import datetime, timezone
 import os
+from boost_checker import check_boosts
+
 
 # Get the current directory of the Python file
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -294,8 +296,19 @@ def index():
     """Handle the main route."""
     if request.method == 'POST':
         user_address = request.form['address']
-        results, total_points = calculate_points(user_address)
-        return render_template('index.html', results=results, total_points=total_points, address=user_address)
+        
+        # Get base results from existing code
+        results, base_points = calculate_points(user_address)
+        
+        # Check boosts and get final points
+        boost_results = check_boosts(user_address, base_points)
+        
+        return render_template('index.html', 
+                             results=results, 
+                             total_points=boost_results['final_points'],
+                             base_points=boost_results['base_points'],
+                             bonuses=boost_results['active_boosts'],
+                             address=user_address)
     return render_template('index.html')
 
 if __name__ == "__main__":
