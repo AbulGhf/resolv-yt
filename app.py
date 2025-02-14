@@ -110,6 +110,56 @@ TOKENS = [
         ],
         'maturity_date': '2025-03-25',
         'price_api': 'https://api-v2.pendle.finance/core/v1/1/assets/prices?addresses=0x353d0B2EFB5B3a7987fB06D30Ad6160522d08426'
+    },
+    {   # USR on Ethereum
+        'name': 'Ethereum USR',
+        'contracts': ['0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110'],
+        'api_key': ETHERSCAN_API_KEY,
+        'base_url': 'https://api.etherscan.io/api',
+        'points_schedule': [
+            {'rate': 30, 'end_date': '2100-01-01'}  # 30 points/day indefinitely
+        ],
+        'maturity_date': '2100-01-01'  # Far future placeholder
+    },
+    {   # USR on Base
+        'name': 'Base USR',
+        'contracts': ['0x35E5dB674D8e93a03d814FA0ADa70731efe8a4b9'],
+        'api_key': BASE_API_KEY,
+        'base_url': 'https://api.basescan.org/api',
+        'points_schedule': [
+            {'rate': 30, 'end_date': '2100-01-01'}  # 30 points/day indefinitely
+        ],
+        'maturity_date': '2100-01-01'
+    },
+    {   # RLP on Ethereum
+        'name': 'Ethereum RLP',
+        'contracts': ['0x4956b52aE2fF65D74CA2d61207523288e4528f96'],
+        'api_key': ETHERSCAN_API_KEY,
+        'base_url': 'https://api.etherscan.io/api',
+        'points_schedule': [
+            {'rate': 10, 'end_date': '2100-01-01'}  # 10 points/day indefinitely
+        ],
+        'maturity_date': '2100-01-01'
+    },
+    {   # RLP on Base
+        'name': 'Base RLP',
+        'contracts': ['0xC31389794Ffac23331E0D9F611b7953f90AA5fDC'],
+        'api_key': BASE_API_KEY,
+        'base_url': 'https://api.basescan.org/api',
+        'points_schedule': [
+            {'rate': 10, 'end_date': '2100-01-01'}  # 10 points/day indefinitely
+        ],
+        'maturity_date': '2100-01-01'
+    },
+        {   # STUSR
+        'name': 'STUSR',
+        'contracts': ['0x6c8984bc7DBBeDAf4F6b2FD766f16eBB7d10AAb4'],
+        'api_key': ETHERSCAN_API_KEY,
+        'base_url': 'https://api.etherscan.io/api',
+        'points_schedule': [
+            {'rate': 5, 'end_date': '2025-12-31'}  # 5 points daily per 1 STUSR
+        ],
+        'maturity_date': '2025-12-31'
     }
 ]
 

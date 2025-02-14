@@ -4,6 +4,7 @@
     --accent: #2d3436;
     --text: #2d3436;
     --text-muted: #636e72;
+    --blue-accent: #4a90e2;
 }
 
 body {
@@ -37,6 +38,7 @@ h1 {
     font-size: 0.9rem;
 }
 
+/* Form Styles */
 form {
     margin-bottom: 2rem;
     display: flex;
@@ -65,6 +67,7 @@ button:hover {
     opacity: 0.9;
 }
 
+/* Boost Status Styles */
 .boost-status {
     margin-bottom: 2rem;
 }
@@ -107,6 +110,7 @@ button:hover {
     color: #00c9a7;
 }
 
+/* Total Points Styles */
 .total-points {
     background: var(--accent);
     color: var(--primary);
@@ -136,6 +140,7 @@ button:hover {
     font-size: 0.9rem;
 }
 
+/* Holdings List Styles */
 .holdings-list {
     display: flex;
     flex-direction: column;
@@ -192,10 +197,27 @@ button:hover {
     font-size: 1.1rem;
 }
 
+.value-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.price-tag {
+    background-color: var(--blue-accent);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
 .days-held {
     color: var(--accent);
 }
 
+/* Footer Styles */
 footer {
     text-align: center;
     margin-top: 3rem;
@@ -208,6 +230,7 @@ footer a {
     text-decoration: none;
 }
 
+/* Responsive Design */
 @media (max-width: 480px) {
     .holding-details {
         grid-template-columns: 1fr;
@@ -219,5 +242,13 @@ footer a {
    
     button {
         width: 100%;
+    }
+
+    .boost-container {
+        flex-direction: column;
+    }
+
+    .value-group {
+        justify-content: space-between;
     }
 }

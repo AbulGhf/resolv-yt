@@ -80,7 +80,12 @@
                     {% if result.balance %}
                     <div class="detail">
                         <span class="label">Amount</span>
-                        <span class="value">{{ result.balance }}</span>
+                        <div class="value-group">
+                            <span class="value">{{ result.balance }}</span>
+                            {% if result.name in ['Base USR LP', 'Ethereum wstUSR LP'] and result.price is defined %}
+                            <span class="price-tag">${{ "%.4f"|format(result.price) }}</span>
+                            {% endif %}
+                        </div>
                     </div>
                     {% endif %}
                 </div>
