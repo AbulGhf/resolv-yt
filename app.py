@@ -180,10 +180,25 @@ TOKENS = [
             {'rate': 5, 'end_date': '2025-12-31'}
         ],
         'maturity_date': '2025-12-31'
+    },
+    {   # Resolv USDC MORPHO
+        'name': 'Resolv USDC MORPHO',
+        'contracts': ['0x132E6C9C33A62D7727cd359b1f51e5B566E485Eb'],
+        'api_key': ETHERSCAN_API_KEY,
+        'base_url': 'https://api.etherscan.io/api',
+        'points_schedule': [
+            {'rate': 5, 'end_date': '2100-01-01'}
+        ],
+        'maturity_date': '2100-01-01',
+        'decimals': 6  # Explicitly specify USDC decimals
     }
 ]
 
 SECONDS_PER_DAY = 86400
+
+def get_token_decimals(token):
+    """Get token decimals with proper fallback."""
+    return token.get('decimals', 18)
 
 def get_alchemy_transfers(user_address, contract_address, target_addresses):
     """Fetch transfers using Alchemy API for multiple target addresses"""
@@ -221,7 +236,7 @@ def get_alchemy_transfers(user_address, contract_address, target_addresses):
     
     return all_transfers
 
-def format_alchemy_transfers(transfers):
+def format_alchemy_transfers(transfers, decimals=18):
     """Format Alchemy transfers to match the structure of other transfers"""
     formatted_transfers = []
     for t in transfers:
@@ -229,19 +244,19 @@ def format_alchemy_transfers(transfers):
             'timeStamp': int(datetime.fromisoformat(t['metadata']['blockTimestamp']).timestamp()),
             'from': t['from'],
             'to': t['to'],
-            'value': int(float(t['value']) * 1e18),  # Convert to wei
-            'tokenDecimal': '18',
+            'value': int(float(t['value']) * (10 ** decimals)),
+            'tokenDecimal': str(decimals),
             'target_address': t['target_address']
         })
     return formatted_transfers
 
-def get_all_transfers(base_url, contracts, user_address, api_key, use_alchemy=False, alchemy_targets=None):
+def get_all_transfers(base_url, contracts, user_address, api_key, use_alchemy=False, alchemy_targets=None, decimals=18):
     """Fetch all token transfers for a given address across multiple contracts."""
     if use_alchemy and alchemy_targets:
         all_transfers = []
         for contract in contracts:
             transfers = get_alchemy_transfers(user_address, contract, alchemy_targets)
-            formatted_transfers = format_alchemy_transfers(transfers)
+            formatted_transfers = format_alchemy_transfers(transfers, decimals)
             all_transfers.extend(formatted_transfers)
         return sorted(all_transfers, key=lambda x: int(x['timeStamp']))
     
@@ -262,14 +277,18 @@ def get_all_transfers(base_url, contracts, user_address, api_key, use_alchemy=Fa
                 'sort': 'asc',
                 'apikey': api_key
             }
-            response = requests.get(base_url, params=params)
-            data = response.json()
-            
-            if data['status'] != '1' or not data['result']:
+            try:
+                response = requests.get(base_url, params=params)
+                data = response.json()
+                if data['status'] != '1' or not data['result']:
+                    break
+                    
+                all_transfers.extend(data['result'])
+                page += 1
+            except Exception as e:
+                print(f"Error fetching transfers: {e}")
                 break
                 
-            all_transfers.extend(data['result'])
-            page += 1
     return sorted(all_transfers, key=lambda x: int(x['timeStamp']))
 
 def process_balance_history(transfers, user_address, final_end):
@@ -280,7 +299,8 @@ def process_balance_history(transfers, user_address, final_end):
 
     for transfer in transfers:
         ts = int(transfer['timeStamp'])
-        decimals = int(transfer['tokenDecimal'])
+        # Important: Use the correct decimals from the transfer
+        decimals = int(transfer.get('tokenDecimal', '18'))
         value = int(transfer['value']) / (10 ** decimals)
         
         if current_ts is not None and ts > current_ts:
@@ -345,6 +365,9 @@ def calculate_points(user_address):
             })
             prev_end_date = end_ts + 1
 
+        # Get token decimals
+        token_decimals = get_token_decimals(token)
+
         # Get transfers using appropriate method
         transfers = get_all_transfers(
             token.get('base_url', ''),
@@ -352,16 +375,17 @@ def calculate_points(user_address):
             user_address,
             token.get('api_key', ''),
             use_alchemy=token.get('use_alchemy', False),
-            alchemy_targets=token.get('alchemy_targets')
+            alchemy_targets=token.get('alchemy_targets'),
+            decimals=token_decimals
         )
 
         if not transfers:
             continue
 
-        # Add alchemy flag to transfers if needed
-        if token.get('use_alchemy'):
-            for t in transfers:
-                t['use_alchemy'] = True
+        # Add token decimals to transfers if not already present
+        for t in transfers:
+            if 'tokenDecimal' not in t:
+                t['tokenDecimal'] = str(token_decimals)
 
         final_end = min(rate_periods[-1]['end'], current_timestamp)
         balance_history = process_balance_history(transfers, user_address, final_end)
@@ -382,6 +406,7 @@ def calculate_points(user_address):
                 holding_days += max(period_days, 0)
                 current_balance = period['balance']
                 
+                # Calculate USD value based on token type
                 if 'price_api' in token:
                     usd_value = period['balance'] * usd_price
                 else:
