@@ -67,49 +67,122 @@ button:hover {
     opacity: 0.9;
 }
 
-/* Boost Status Styles */
 .boost-status {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     margin-bottom: 2rem;
 }
 
 .boost-status h3 {
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #2d3436;
+    font-size: 1.25rem;
 }
 
 .boost-container {
-    display: flex;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
 }
 
 .boost-item {
-    flex: 1;
-    padding: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    background: #f0fdf9;
+    padding: 1.25rem 1.5rem;
+    border-radius: 12px;
+    border: 2px solid #00c9a7;
+    position: relative;
+    min-height: 100px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.boost-item.active {
-    background-color: #f0f0f0;
-    border-color: #00c9a7;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .boost-name {
     font-weight: 500;
+    color: #2d3436;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .boost-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    background: #00c9a7;
+    color: white;
     font-weight: 500;
-    color: var(--text-muted);
 }
 
-.boost-item.active .boost-status-badge {
+.boost-points-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.boost-arrow {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #f0fdf9;
+}
+
+.boost-points {
+    background: #2d3436;
+    color: white;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    font-size: 1.125rem;
+    font-weight: 500;
+    text-align: center;
+    display: inline-block;
+    min-width: 120px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.total-points-container {
+    background: #2d3436;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-top: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.total-points-label {
+    color: #ffffff;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.9;
+}
+
+.total-points-value {
     color: #00c9a7;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
 }
 
+@media (max-width: 640px) {
+    .boost-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .boost-item {
+        margin-bottom: 1rem;
+    }
+}
 /* Total Points Styles */
 .total-points {
     background: var(--accent);
