@@ -12,13 +12,11 @@
             <h1>Resolv YT Tracker</h1>
             <p class="subtitle">Track your Yield Token holdings and points</p>
         </header>
-
         <form method="POST">
-            <input type="text" name="address" placeholder="Enter Ethereum address" required 
+            <input type="text" name="address" placeholder="Enter Ethereum address" required
                    value="{{ address if address else '' }}">
             <button type="submit">Check Holdings</button>
         </form>
-
         {% if results %}
         <div class="boost-status">
             <h3>Boost Status</h3>
@@ -28,7 +26,7 @@
                     <div class="boost-status-badge">Active (+10%)</div>
                     <div class="boost-points-container">
                         <div class="boost-arrow"></div>
-                        <div class="boost-points">+{{ (base_points * 0.1) | round(2) }}</div>
+                        <div class="boost-points">+{{ "{:,.2f}".format(base_points * 0.1) }}</div>
                     </div>
                 </div>
                 <div class="boost-item">
@@ -36,52 +34,53 @@
                     <div class="boost-status-badge">Active (+10%)</div>
                     <div class="boost-points-container">
                         <div class="boost-arrow"></div>
-                        <div class="boost-points">+{{ (base_points * 0.1) | round(2) }}</div>
+                        <div class="boost-points">+{{ "{:,.2f}".format(base_points * 0.1) }}</div>
                     </div>
                 </div>
             </div>
         </div>
-        
+       
         <div class="total-points-container">
             <div class="total-points-label">Total Points</div>
-            <div class="total-points-value">{{ total_points }}</div>
+            <div class="total-points-value">{{ "{:,.2f}".format(total_points) }}</div>
         </div>
-        
+       
         <div class="holdings-list">
             {% for result in results %}
             <div class="holding-card">
                 <div class="holding-header">
                     <h3>{{ result.name }}</h3>
-                    <span class="points-badge">{{ result.points }} Points</span>
+                    <span class="points-badge">{{ "{:,.2f}".format(result.points) }} Points</span>
                 </div>
                 <div class="holding-details">
+                    {% if result.balance %}
                     <div class="detail">
-                        <span class="label">Days Held</span>
-                        <span class="value days-held">{{ result.days }}</span>
+                        <span class="label">Amount</span>
+                        <div class="value-group">
+                            <span class="value">{{ "{:,.4f}".format(result.balance) }}</span>
+                            {% if result.name in ['Base USR LP', 'Ethereum wstUSR LP', 'Equilibria USR Pool'] and result.price is defined %}
+                            <span class="price-tag">${{ "{:,.4f}".format(result.price) }}</span>
+                            {% endif %}
+                        </div>
                     </div>
-                    {% if 'YT' in result.name or 'LP' in result.name %}
+                    {% endif %}
+                    
+                    {% if result.name == 'Equilibria USR Pool' or (result.name not in ['Base RLP', 'Ethereum RLP'] and ('YT' in result.name or result.name in ['Base USR LP', 'Ethereum wstUSR LP'])) %}
                     <div class="detail">
                         <span class="label">Matures</span>
                         <span class="value">{{ result.maturity_date }}</span>
                     </div>
                     {% endif %}
-                    {% if result.balance %}
+                    
                     <div class="detail">
-                        <span class="label">Amount</span>
-                        <div class="value-group">
-                            <span class="value">{{ result.balance }}</span>
-                            {% if result.name in ['Base USR LP', 'Ethereum wstUSR LP'] and result.price is defined %}
-                            <span class="price-tag">${{ "%.4f"|format(result.price) }}</span>
-                            {% endif %}
-                        </div>
+                        <span class="label">Days Held</span>
+                        <span class="value days-held">{{ "{:,.2f}".format(result.days) }}</span>
                     </div>
-                    {% endif %}
                 </div>
             </div>
             {% endfor %}
         </div>
         {% endif %}
-
         <footer>
             <p>Created by <a href="https://twitter.com/magicianafk" target="_blank">@Magicianafk</a></p>
         </footer>

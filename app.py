@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 import os
 from boost_checker import check_boosts
 
-
 # Get the current directory of the Python file
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -16,6 +15,13 @@ app = Flask(__name__,
 # Get API keys from environment variables
 BASE_API_KEY = os.environ.get('BASE_API_KEY', 'ZIFYVT836FXTEGSRYMDZDAI6KM7BQUQE64')
 ETHERSCAN_API_KEY = os.environ.get('ETHERSCAN_API_KEY', 'GHA86RPT9HPEQZQEUD3QPFC827796KCJ4V')
+
+# Alchemy configuration
+ALCHEMY_URL = 'https://base-mainnet.g.alchemy.com/v2/uuLBOZte0sf0z3XRVPPsPKMrfuQ1gqHv'
+ALCHEMY_HEADERS = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+}
 
 TOKENS = [
     {   # Ethereum Pendle USR YT
@@ -39,6 +45,20 @@ TOKENS = [
             {'rate': 45, 'end_date': '2025-04-24'}
         ],
         'maturity_date': '2025-04-24'
+    },
+    {   # Equilibria USR Pool
+        'name': 'Equilibria USR Pool',
+        'contracts': ['0xE15578523937ed7F08E8F7a1Fa8a021E07025a08'],  # LP token contract
+        'points_schedule': [
+            {'rate': 60, 'end_date': '2025-04-24'}
+        ],
+        'maturity_date': '2025-04-24',
+        'price_api': 'https://api-v2.pendle.finance/core/v1/8453/assets/prices?addresses=0xE15578523937ed7F08E8F7a1Fa8a021E07025a08',
+        'use_alchemy': True,
+        'alchemy_targets': [
+            '0x2583A2538272f31e9A15dD12A432B8C96Ab4821d',
+            '0x920873E5b302A619C54c908aDFB77a1C4256A3B8'
+        ]
     },
     {   # Ethereum Spectra USR YT
         'name': 'Ethereum Spectra USR YT',
@@ -87,7 +107,7 @@ TOKENS = [
         ],
         'maturity_date': '2025-04-30'
     },
-    {   # Base USR LP (New Entry)
+    {   # Base USR LP
         'name': 'Base USR LP',
         'contracts': ['0xE15578523937ed7F08E8F7a1Fa8a021E07025a08'],
         'api_key': BASE_API_KEY,
@@ -99,7 +119,7 @@ TOKENS = [
         'maturity_date': '2025-04-24',
         'price_api': 'https://api-v2.pendle.finance/core/v1/8453/assets/prices?addresses=0xE15578523937ed7F08E8F7a1Fa8a021E07025a08'
     },
-    {   # Ethereum wstUSR LP (New Entry)
+    {   # Ethereum wstUSR LP
         'name': 'Ethereum wstUSR LP',
         'contracts': ['0x353d0B2EFB5B3a7987fB06D30Ad6160522d08426'],
         'api_key': ETHERSCAN_API_KEY,
@@ -117,9 +137,9 @@ TOKENS = [
         'api_key': ETHERSCAN_API_KEY,
         'base_url': 'https://api.etherscan.io/api',
         'points_schedule': [
-            {'rate': 30, 'end_date': '2100-01-01'}  # 30 points/day indefinitely
+            {'rate': 30, 'end_date': '2100-01-01'}
         ],
-        'maturity_date': '2100-01-01'  # Far future placeholder
+        'maturity_date': '2100-01-01'
     },
     {   # USR on Base
         'name': 'Base USR',
@@ -127,7 +147,7 @@ TOKENS = [
         'api_key': BASE_API_KEY,
         'base_url': 'https://api.basescan.org/api',
         'points_schedule': [
-            {'rate': 30, 'end_date': '2100-01-01'}  # 30 points/day indefinitely
+            {'rate': 30, 'end_date': '2100-01-01'}
         ],
         'maturity_date': '2100-01-01'
     },
@@ -137,7 +157,7 @@ TOKENS = [
         'api_key': ETHERSCAN_API_KEY,
         'base_url': 'https://api.etherscan.io/api',
         'points_schedule': [
-            {'rate': 10, 'end_date': '2100-01-01'}  # 10 points/day indefinitely
+            {'rate': 10, 'end_date': '2100-01-01'}
         ],
         'maturity_date': '2100-01-01'
     },
@@ -147,17 +167,17 @@ TOKENS = [
         'api_key': BASE_API_KEY,
         'base_url': 'https://api.basescan.org/api',
         'points_schedule': [
-            {'rate': 10, 'end_date': '2100-01-01'}  # 10 points/day indefinitely
+            {'rate': 10, 'end_date': '2100-01-01'}
         ],
         'maturity_date': '2100-01-01'
     },
-        {   # STUSR
+    {   # STUSR
         'name': 'STUSR',
         'contracts': ['0x6c8984bc7DBBeDAf4F6b2FD766f16eBB7d10AAb4'],
         'api_key': ETHERSCAN_API_KEY,
         'base_url': 'https://api.etherscan.io/api',
         'points_schedule': [
-            {'rate': 5, 'end_date': '2025-12-31'}  # 5 points daily per 1 STUSR
+            {'rate': 5, 'end_date': '2025-12-31'}
         ],
         'maturity_date': '2025-12-31'
     }
@@ -165,12 +185,67 @@ TOKENS = [
 
 SECONDS_PER_DAY = 86400
 
-def format_timestamp(ts):
-    """Convert timestamp to human-readable date."""
-    return datetime.fromtimestamp(ts, tz=timezone.utc).strftime('%Y-%m-%d')
+def get_alchemy_transfers(user_address, contract_address, target_addresses):
+    """Fetch transfers using Alchemy API for multiple target addresses"""
+    all_transfers = []
+    
+    for target_address in target_addresses:
+        payload = {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "alchemy_getAssetTransfers",
+            "params": [
+                {
+                    "fromBlock": "0x0",
+                    "toBlock": "latest",
+                    "fromAddress": user_address,
+                    "toAddress": target_address,
+                    "contractAddresses": [contract_address],
+                    "category": ["erc20"],
+                    "withMetadata": True,
+                    "excludeZeroValue": True,
+                    "maxCount": "0x3e8"
+                }
+            ]
+        }
 
-def get_all_transfers(base_url, contracts, user_address, api_key):
+        try:
+            response = requests.post(ALCHEMY_URL, headers=ALCHEMY_HEADERS, json=payload)
+            data = response.json()
+            transfers = data.get('result', {}).get('transfers', [])
+            for transfer in transfers:
+                transfer['target_address'] = target_address
+            all_transfers.extend(transfers)
+        except Exception as e:
+            print(f"Error fetching Alchemy transfers for {target_address}: {e}")
+    
+    return all_transfers
+
+def format_alchemy_transfers(transfers):
+    """Format Alchemy transfers to match the structure of other transfers"""
+    formatted_transfers = []
+    for t in transfers:
+        formatted_transfers.append({
+            'timeStamp': int(datetime.fromisoformat(t['metadata']['blockTimestamp']).timestamp()),
+            'from': t['from'],
+            'to': t['to'],
+            'value': int(float(t['value']) * 1e18),  # Convert to wei
+            'tokenDecimal': '18',
+            'target_address': t['target_address']
+        })
+    return formatted_transfers
+
+def get_all_transfers(base_url, contracts, user_address, api_key, use_alchemy=False, alchemy_targets=None):
     """Fetch all token transfers for a given address across multiple contracts."""
+    if use_alchemy and alchemy_targets:
+        all_transfers = []
+        for contract in contracts:
+            transfers = get_alchemy_transfers(user_address, contract, alchemy_targets)
+            formatted_transfers = format_alchemy_transfers(transfers)
+            all_transfers.extend(formatted_transfers)
+        return sorted(all_transfers, key=lambda x: int(x['timeStamp']))
+    
+    # Original API logic for other tokens
     all_transfers = []
     for contract in contracts:
         page = 1
@@ -215,10 +290,17 @@ def process_balance_history(transfers, user_address, final_end):
                 'balance': balance
             })
         
-        if transfer['from'].lower() == user_address.lower():
-            balance -= value
-        elif transfer['to'].lower() == user_address.lower():
-            balance += value
+        # For transfers using Alchemy API (USR Pool)
+        if 'target_address' in transfer:
+            # Add to balance when user transfers to either target address
+            if transfer['from'].lower() == user_address.lower():
+                balance += value
+        else:
+            # Original balance tracking for other tokens
+            if transfer['from'].lower() == user_address.lower():
+                balance -= value
+            elif transfer['to'].lower() == user_address.lower():
+                balance += value
         
         current_ts = ts
 
@@ -238,7 +320,7 @@ def get_token_price(price_api_url):
         if response.status_code == 200:
             data = response.json()
             return data['prices'].get(price_api_url.split('=')[-1].lower(), 1.0)
-        return 1.0  # Fallback price
+        return 1.0
     except Exception as e:
         print(f"Error fetching price: {e}")
         return 1.0
@@ -261,28 +343,34 @@ def calculate_points(user_address):
                 'end': end_ts,
                 'rate': schedule['rate']
             })
-            prev_end_date = end_ts + 1  # Prevent overlapping periods
+            prev_end_date = end_ts + 1
 
+        # Get transfers using appropriate method
         transfers = get_all_transfers(
-            token['base_url'],
+            token.get('base_url', ''),
             token['contracts'],
             user_address,
-            token['api_key']
+            token.get('api_key', ''),
+            use_alchemy=token.get('use_alchemy', False),
+            alchemy_targets=token.get('alchemy_targets')
         )
 
         if not transfers:
             continue
 
-        # Use current timestamp instead of maturity date for active positions
+        # Add alchemy flag to transfers if needed
+        if token.get('use_alchemy'):
+            for t in transfers:
+                t['use_alchemy'] = True
+
         final_end = min(rate_periods[-1]['end'], current_timestamp)
         balance_history = process_balance_history(transfers, user_address, final_end)
         
         token_points = 0
         holding_days = 0.0
         current_balance = 0.0
-        usd_price = 1.0  # Default for non-LP tokens
+        usd_price = 1.0
         
-        # Get USD price for LP tokens
         if 'price_api' in token:
             usd_price = get_token_price(token['price_api'])
         
@@ -291,16 +379,14 @@ def calculate_points(user_address):
                 period_start = max(period['start'], int(transfers[0]['timeStamp']))
                 period_end = min(period['end'], current_timestamp)
                 period_days = (period_end - period_start) / SECONDS_PER_DAY
-                holding_days += max(period_days, 0)  # Prevent negative days
+                holding_days += max(period_days, 0)
                 current_balance = period['balance']
                 
-                # Calculate USD value for LP tokens
                 if 'price_api' in token:
                     usd_value = period['balance'] * usd_price
                 else:
                     usd_value = period['balance']
                 
-                # Points calculation with USD value
                 for rate_block in rate_periods:
                     overlap_start = max(period['start'], rate_block['start'])
                     overlap_end = min(period['end'], rate_block['end'])
@@ -311,35 +397,25 @@ def calculate_points(user_address):
                     rate_days = (overlap_end - overlap_start) / SECONDS_PER_DAY
                     token_points += usd_value * rate_days * rate_block['rate']
         
+        result = {
+            'name': token['name'],
+            'points': round(token_points, 2),
+            'days': round(holding_days, 2),
+            'balance': round(current_balance, 4),
+            'maturity_date': token['maturity_date']
+        }
+        
         if 'price_api' in token:
-            if token['name'] in ['Base USR LP', 'Ethereum wstUSR LP']:
-                results.append({
-                    'name': token['name'],
-                    'points': round(token_points, 2),
-                    'days': round(holding_days, 2),
-                    'balance': round(current_balance, 4),
-                    'maturity_date': token['maturity_date'],
-                    'price': round(usd_price, 4)
-                })
-            else:
-                results.append({
-                    'name': token['name'],
-                    'points': round(token_points, 2),
-                    'days': round(holding_days, 2),
-                    'balance': round(current_balance, 4),
-                    'maturity_date': token['maturity_date']
-                })
-        else:
-            results.append({
-                'name': token['name'],
-                'points': round(token_points, 2),
-                'days': round(holding_days, 2),
-                'balance': round(current_balance, 4),
-                'maturity_date': token['maturity_date']
-            })
+            result['price'] = round(usd_price, 4)
+            
+        results.append(result)
         total_points += token_points
     
     return results, round(total_points, 2)
+
+def format_timestamp(ts):
+    """Convert timestamp to human-readable date."""
+    return datetime.fromtimestamp(ts, tz=timezone.utc).strftime('%Y-%m-%d')
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
