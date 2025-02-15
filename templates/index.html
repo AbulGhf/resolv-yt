@@ -21,6 +21,7 @@
         <div class="boost-status">
             <h3>Boost Status</h3>
             <div class="boost-container">
+                <!-- Hyperliquid Power User Boost -->
                 <div class="boost-item">
                     <div class="boost-name">Hyperliquid Power User</div>
                     <div class="boost-status-badge">Active (+10%)</div>
@@ -29,6 +30,8 @@
                         <div class="boost-points">+{{ "{:,.2f}".format(base_points * 0.1) }}</div>
                     </div>
                 </div>
+
+                <!-- Dinero Power User Boost -->
                 <div class="boost-item">
                     <div class="boost-name">Dinero Power User</div>
                     <div class="boost-status-badge">Active (+10%)</div>
@@ -37,6 +40,22 @@
                         <div class="boost-points">+{{ "{:,.2f}".format(base_points * 0.1) }}</div>
                     </div>
                 </div>
+
+                <!-- Tier-Based Boost -->
+                {% if bonuses %}
+                    {% for bonus in bonuses %}
+                        {% if "Tier Boost" in bonus.name %}
+                        <div class="boost-item">
+                            <div class="boost-name">{{ bonus.name }}</div>
+                            <div class="boost-status-badge">Active ({{ bonus.value }})</div>
+                            <div class="boost-points-container">
+                                <div class="boost-arrow"></div>
+                                <div class="boost-points">+{{ "{:,.2f}".format(base_points * (bonus.value | replace('+', '') | replace('%', '') | float / 100)) }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
 

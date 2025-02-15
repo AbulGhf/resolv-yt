@@ -484,9 +484,38 @@ def index():
         # Check boosts and get final points
         boost_results = check_boosts(user_address, base_points)
         
+        # Calculate tier-based boost based on number of activities
+        activity_count = len(results)
+        tier_boost = None
+        
+        if activity_count >= 10:
+            tier_name = "Strong"
+            boost_percent = 69
+        elif activity_count >= 7:
+            tier_name = "Gold"
+            boost_percent = 50
+        elif activity_count >= 5:
+            tier_name = "Silver"
+            boost_percent = 25
+        elif activity_count >= 3:
+            tier_name = "Bronze"
+            boost_percent = 10
+        else:
+            tier_name = None
+            boost_percent = 0
+        
+        # Apply tier boost if eligible
+        if tier_name:
+            boost_amount = base_points * (boost_percent / 100)
+            boost_results['final_points'] += boost_amount
+            boost_results['active_boosts'].append({
+                'name': f'{tier_name} Tier Boost',
+                'value': f'+{boost_percent}%'
+            })
+        
         return render_template('index.html', 
                              results=results, 
-                             total_points=boost_results['final_points'],
+                             total_points=round(boost_results['final_points'], 2),
                              base_points=boost_results['base_points'],
                              bonuses=boost_results['active_boosts'],
                              address=user_address)
