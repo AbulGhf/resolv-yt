@@ -35,4 +35,4 @@ ENV/
 .env
 
 # Logs
-*.log
+*.log__pycache__/
