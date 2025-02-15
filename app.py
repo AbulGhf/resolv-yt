@@ -191,7 +191,37 @@ TOKENS = [
         ],
         'maturity_date': '2100-01-01',
         'decimals': 6  # Explicitly specify USDC decimals
-    }
+    },
+        {   # Provide liquidity to USR pool on Curve
+        'name': 'USR/USDC Curve',
+        'contracts': ['0x3eE841F47947FEFbE510366E4bbb49e145484195'],
+        'api_key': ETHERSCAN_API_KEY,
+        'base_url': 'https://api.etherscan.io/api',
+        'points_schedule': [
+            {'rate': 55, 'end_date': '2100-01-01'}
+        ],
+        'maturity_date': '2100-01-01',
+    },
+            {   # Provide liquidity to RLP pool on Curve
+        'name': 'RLP/USDC Curve',
+        'contracts': ['0x8e001d4bac0eae1eea348dfc22f9b8bda67dd211'],
+        'api_key': ETHERSCAN_API_KEY,
+        'base_url': 'https://api.etherscan.io/api',
+        'points_schedule': [
+            {'rate': 45, 'end_date': '2100-01-01'}
+        ],
+        'maturity_date': '2100-01-01',
+    },
+            {   # Provide liquidity to USR-RLP pool on Curve
+        'name': 'USR-RLP Curve',
+        'contracts': ['0xc907ba505c2e1cbc4658c395d4a2c7e6d2c32656'],
+        'api_key': ETHERSCAN_API_KEY,
+        'base_url': 'https://api.etherscan.io/api',
+        'points_schedule': [
+            {'rate': 60, 'end_date': '2100-01-01'}
+        ],
+        'maturity_date': '2100-01-01',
+    },
 ]
 
 SECONDS_PER_DAY = 86400

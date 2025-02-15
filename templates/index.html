@@ -39,12 +39,22 @@
                 </div>
             </div>
         </div>
-       
+
+        <!-- Updated Total Points Section with Toggle -->
         <div class="total-points-container">
             <div class="total-points-label">Total Points</div>
-            <div class="total-points-value">{{ "{:,.2f}".format(total_points) }}</div>
+            <div class="total-points-value" data-base="{{ base_points }}" data-total="{{ total_points }}">
+                {{ "{:,.2f}".format(total_points) }}
+            </div>
+            <div class="toggle-container">
+                <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+                <span class="toggle-label">Include boosts</span>
+            </div>
         </div>
-       
+
         <div class="holdings-list">
             {% for result in results %}
             <div class="holding-card">
@@ -85,5 +95,18 @@
             <p>Created by <a href="https://twitter.com/magicianafk" target="_blank">@Magicianafk</a></p>
         </footer>
     </div>
+
+    <!-- JavaScript for Toggle Functionality -->
+    <script>
+        document.querySelector('.toggle-switch input').addEventListener('change', function(e) {
+            const totalPointsElement = document.querySelector('.total-points-value');
+            const base = parseFloat(totalPointsElement.dataset.base);
+            const total = parseFloat(totalPointsElement.dataset.total);
+            const formattedValue = this.checked ? 
+                total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) :
+                base.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            totalPointsElement.textContent = formattedValue;
+        });
+    </script>
 </body>
 </html>
