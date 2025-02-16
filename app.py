@@ -222,6 +222,48 @@ TOKENS = [
         ],
         'maturity_date': '2100-01-01',
     },
+            {   # Supply USR on Euler
+        'name': 'Supply USR on Euler',
+        'contracts': ['0x3A8992754E2EF51D8F90620d2766278af5C59b90'],
+        'api_key': ETHERSCAN_API_KEY,
+        'base_url': 'https://api.etherscan.io/api',
+        'points_schedule': [
+            {'rate': 30, 'end_date': '2100-01-01'}
+        ],
+        'maturity_date': '2100-01-01',
+    },
+            {   # Supply USDC on Euler 
+        'name': 'Supply USR on Euler',
+        'contracts': ['0x116Ac0E31A6764a4333F55642832fc81f3f1a3C9'],
+        'api_key': ETHERSCAN_API_KEY,
+        'base_url': 'https://api.etherscan.io/api',
+        'points_schedule': [
+            {'rate': 5, 'end_date': '2100-01-01'}
+        ],
+        'maturity_date': '2100-01-01',
+    },
+            {   # Supply USDC on Euler Tulipa
+        'name': 'Supply USDC on Euler Tulipa',
+        'contracts': ['0x15E1157421eDFd32139B4600823CD856C6F1d85A'],
+        'api_key': ETHERSCAN_API_KEY,
+        'base_url': 'https://api.etherscan.io/api',
+        'points_schedule': [
+            {'rate': 5, 'end_date': '2100-01-01'}
+        ],
+        'maturity_date': '2100-01-01',
+    },
+               {   # Supply wstUSR on Euler
+        'name': 'Supply wstUSR on Euler',
+        'contracts': ['0xaA9B7548C09C1AE9AFE74AF26B18f981ce2F101C'],
+        'api_key': ETHERSCAN_API_KEY,
+        'base_url': 'https://api.etherscan.io/api',
+        'points_schedule': [
+            {'rate': 5, 'end_date': '2100-01-01'}
+        ],
+        'maturity_date': '2100-01-01',
+    }
+
+
 ]
 
 SECONDS_PER_DAY = 86400
