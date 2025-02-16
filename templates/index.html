@@ -5,18 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resolv Points Tracker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Resolv Points Tracker</h1>
-            <p class="subtitle">Track your Token holdings and points</p>
+            <p class="subtitle">Track your token holdings and points</p>
         </header>
+
         <form method="POST">
             <input type="text" name="address" placeholder="Enter Ethereum address" required
                    value="{{ address if address else '' }}">
             <button type="submit">Check Holdings</button>
         </form>
+
         {% if results %}
         <div class="boost-status">
             <h3>Boost Status</h3>
@@ -26,7 +31,6 @@
                     <div class="boost-name">Hyperliquid Power User</div>
                     <div class="boost-status-badge">Active (+10%)</div>
                     <div class="boost-points-container">
-                        <div class="boost-arrow"></div>
                         <div class="boost-points">+{{ "{:,.2f}".format(base_points * 0.1) }}</div>
                     </div>
                 </div>
@@ -36,7 +40,6 @@
                     <div class="boost-name">Dinero Power User</div>
                     <div class="boost-status-badge">Active (+10%)</div>
                     <div class="boost-points-container">
-                        <div class="boost-arrow"></div>
                         <div class="boost-points">+{{ "{:,.2f}".format(base_points * 0.1) }}</div>
                     </div>
                 </div>
@@ -49,7 +52,6 @@
                             <div class="boost-name">{{ bonus.name }}</div>
                             <div class="boost-status-badge">Active ({{ bonus.value }})</div>
                             <div class="boost-points-container">
-                                <div class="boost-arrow"></div>
                                 <div class="boost-points">+{{ "{:,.2f}".format(base_points * (bonus.value | replace('+', '') | replace('%', '') | float / 100)) }}</div>
                             </div>
                         </div>
@@ -59,7 +61,7 @@
             </div>
         </div>
 
-        <!-- Updated Total Points Section with Toggle -->
+        <!-- Total Points Section -->
         <div class="total-points-container">
             <div class="total-points-label">Total Points</div>
             <div class="total-points-value" data-base="{{ base_points }}" data-total="{{ total_points }}">
@@ -110,6 +112,7 @@
             {% endfor %}
         </div>
         {% endif %}
+        
         <footer>
             <p>Created by <a href="https://twitter.com/magicianafk" target="_blank">@Magicianafk</a></p>
         </footer>
