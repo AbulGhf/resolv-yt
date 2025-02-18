@@ -31,9 +31,9 @@ TOKENS = [
         'base_url': 'https://api.etherscan.io/api',
         'points_schedule': [
             {'rate': 20, 'end_date': '2025-01-31'},
-            {'rate': 15, 'end_date': '2025-02-22'}
+            {'rate': 15, 'end_date': '2025-03-25'}
         ],
-        'maturity_date': '2025-02-22'
+        'maturity_date': '2025-03-25'
     },
     {   # Base Pendle USR YT
         'name': 'Base Pendle USR YT',
